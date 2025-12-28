@@ -221,6 +221,10 @@
       border-radius: 0.5rem;
       margin-bottom: 1rem;
       margin-top: 1.5rem;
+      /* Que ocupe toda la fila del grid */
+      grid-column: 1 / -1;
+      width: 100%;
+      display: block;
     }
     
     .family-title-header:first-child {
@@ -1100,278 +1104,183 @@
   <!-- JavaScript Optimizado para Máximo Rendimiento -->
   <script>
     let elements = {};
-    
-    // Función para navegar a una familia específica
-    function navigateToFamily(familyId) {
-      if (familyId) {
-        const familyElement = document.getElementById(familyId);
-        if (familyElement) {
-          familyElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-          // Agregar un efecto visual temporal
-          familyElement.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
-          setTimeout(() => {
-            familyElement.style.boxShadow = '';
-          }, 2000);
-        }
+    // Familias y descripciones
+    const familyInfo = {
+      '2930F': {
+        title: 'Switch Aruba 2930F',
+        desc: 'Switches de acceso de capa 3 Lite, ideales para redes empresariales medianas y sucursales. Ofrecen administración sencilla, PoE, stacking físico y virtual, y opciones de 8, 24 y 48 puertos con SFP/SFP+.'
+      },
+      '5140': {
+        title: 'Switch FlexNetwork 5140',
+        desc: 'Switches de capa 2/3 gestionables con alto rendimiento, apilamiento físico, soporte para PoE+ y SFP+, diseñados para redes empresariales que requieren flexibilidad y escalabilidad.'
+      },
+      '6000': {
+        title: 'Switch Aruba Networking CX 6000',
+        desc: 'Switches de acceso de capa 2 con administración moderna, PoE, SFP y SFP+, ideales para pequeñas y medianas empresas que buscan simplicidad y confiabilidad.'
+      },
+      '6100': {
+        title: 'Switch Aruba Networking CX 6100',
+        desc: 'Switches de acceso de capa 2/3 con opciones de PoE, SFP+ y apilamiento, pensados para empresas que requieren mayor rendimiento, seguridad y facilidad de gestión.'
+      },
+      '6200F': {
+        title: 'Switch Aruba Networking CX 6200F',
+        desc: 'Switches de acceso de capa 3 con apilamiento físico, PoE, SFP+ y funciones avanzadas de seguridad y automatización para redes empresariales modernas.'
+      },
+      '6200M': {
+        title: 'Switch Aruba Networking CX 6200M',
+        desc: 'Switches modulares de capa 3 con alta densidad de puertos, apilamiento, PoE avanzado y capacidades de automatización, ideales para redes de campus y grandes empresas.'
+      },
+      '6300M': {
+        title: 'Switch Aruba Networking CX 6300M',
+        desc: 'Switches de acceso y agregación de capa 3, modulares, con soporte para alta densidad, PoE, SFP28/56, apilamiento y automatización avanzada para entornos empresariales exigentes.'
+      },
+      '8300': {
+        title: 'Switch Aruba Networking CX 8300/8325/8360',
+        desc: 'Switches de núcleo y agregación de alto rendimiento para centros de datos y grandes empresas. Ofrecen conectividad 25G/100G, redundancia avanzada, alta disponibilidad y capacidades de automatización para redes críticas.'
       }
+    };
+    // Familias en orden
+    const familyOrder = ['2930F', '5140', '6000', '6100', '6200F', '6200M', '6300M', '8300'];
+    // Convertir tarjeta a objeto
+    function convertToListItem(link) {
+      const card = link.querySelector('.ccr-card');
+      if (!card) return null;
+      const img = card.querySelector('img');
+      const sku = card.querySelector('p.font-bold');
+      const priceSpan = card.querySelector('span');
+      const descP = card.querySelector('.absolute p');
+      if (!img || !sku || !priceSpan) return null;
+      const imgSrc = img.src;
+      const imgAlt = img.alt;
+      const skuText = sku.textContent.trim();
+      const priceText = priceSpan.textContent.trim();
+      const descText = descP ? descP.textContent.trim() : '';
+      const productUrl = link.href;
+      const priceValue = link.getAttribute('data-price');
+      return { imgSrc, imgAlt, skuText, priceText, descText, productUrl, priceValue };
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      elements.modal = document.getElementById('image-modal');
-      elements.modalImg = document.getElementById('modal-image');
-      elements.mainImg = document.getElementById('img_main');
-      
-      // Variables para almacenar productos originales
-      let allProducts = [];
-  const familyInfo = {
-        '2930F': {
-          title: 'Switch Aruba 2930F',
-          desc: 'Switches de acceso de capa 3 Lite, ideales para redes empresariales medianas y sucursales. Ofrecen administración sencilla, PoE, stacking físico y virtual, y opciones de 8, 24 y 48 puertos con SFP/SFP+.'
-        },
-        '5140': {
-          title: 'Switch FlexNetwork 5140',
-          desc: 'Switches de capa 2/3 gestionables con alto rendimiento, apilamiento físico, soporte para PoE+ y SFP+, diseñados para redes empresariales que requieren flexibilidad y escalabilidad.'
-        },
-        '6000': {
-          title: 'Switch Aruba Networking CX 6000',
-          desc: 'Switches de acceso de capa 2 con administración moderna, PoE, SFP y SFP+, ideales para pequeñas y medianas empresas que buscan simplicidad y confiabilidad.'
-        },
-        '6100': {
-          title: 'Switch Aruba Networking CX 6100',
-          desc: 'Switches de acceso de capa 2/3 con opciones de PoE, SFP+ y apilamiento, pensados para empresas que requieren mayor rendimiento, seguridad y facilidad de gestión.'
-        },
-        '6200F': {
-          title: 'Switch Aruba Networking CX 6200F',
-          desc: 'Switches de acceso de capa 3 con apilamiento físico, PoE, SFP+ y funciones avanzadas de seguridad y automatización para redes empresariales modernas.'
-        },
-        '6200M': {
-          title: 'Switch Aruba Networking CX 6200M',
-          desc: 'Switches modulares de capa 3 con alta densidad de puertos, apilamiento, PoE avanzado y capacidades de automatización, ideales para redes de campus y grandes empresas.'
-        },
-        '6300M': {
-          title: 'Switch Aruba Networking CX 6300M',
-          desc: 'Switches de acceso y agregación de capa 3, modulares, con soporte para alta densidad, PoE, SFP28/56, apilamiento y automatización avanzada para entornos empresariales exigentes.'
-        },
-        '8300': {
-          title: 'Switch Aruba Networking CX 8300/8325/8360',
-          desc: 'Switches de núcleo y agregación de alto rendimiento para centros de datos y grandes empresas. Ofrecen conectividad 25G/100G, redundancia avanzada, alta disponibilidad y capacidades de automatización para redes críticas.'
+    // Crear HTML de tarjeta
+    function createProductCardHTML(data) {
+      return `
+        <div class="product-card" data-price="${data.priceValue}" data-url="${data.productUrl}">
+          <img src="${data.imgSrc}" alt="${data.imgAlt}" loading="lazy">
+          <div class="product-sku">${data.skuText}</div>
+          <div class="product-brand">HPE</div>
+          <div class="product-price">${data.priceText}</div>
+          <div class="product-desc">${data.descText}</div>
+        </div>
+      `;
+    }
+    // Obtener familia
+    function getFamily(link) {
+      let el = link.parentElement;
+      while (el) {
+        if (el.id && familyOrder.includes(el.id)) {
+          return el.id;
         }
-      };
-      
-      // Función para convertir tarjetas a formato lista
-      function convertToListItem(link) {
-        const card = link.querySelector('.ccr-card');
-        if (!card) return null;
-        
-        const img = card.querySelector('img');
-        const sku = card.querySelector('p.font-bold');
-        const priceSpan = card.querySelector('span');
-        const descP = card.querySelector('.absolute p');
-        
-        if (!img || !sku || !priceSpan) return null;
-        
-        const imgSrc = img.src;
-        const imgAlt = img.alt;
-        const skuText = sku.textContent.trim();
-        const priceText = priceSpan.textContent.trim();
-        const descText = descP ? descP.textContent.trim() : '';
-        const productUrl = link.href;
-        const priceValue = link.getAttribute('data-price');
-        
-        return {
-          imgSrc, imgAlt, skuText, priceText, descText, productUrl, priceValue
-        };
+        el = el.parentElement;
       }
-      
-      // Función para crear HTML de tarjeta de producto
-      function createProductCardHTML(data) {
-        return `
-          <div class="product-card" data-price="${data.priceValue}" data-url="${data.productUrl}">
-            <img src="${data.imgSrc}" alt="${data.imgAlt}" loading="lazy">
-            <div class="product-sku">${data.skuText}</div>
-            <div class="product-brand">HPE</div>
-            <div class="product-price">${data.priceText}</div>
-            <div class="product-desc">${data.descText}</div>
-          </div>
-        `;
+      return '';
+    }
+    // Obtener precio numérico
+    function getPrice(priceStr) {
+      if (!priceStr || priceStr === 'consultar') return 999999;
+      return parseFloat(priceStr.replace(/,/g, ''));
+    }
+    // Recopilar todos los productos
+    let allProducts = [];
+    document.querySelectorAll('a.block[data-price]').forEach(link => {
+      const itemData = convertToListItem(link);
+      if (itemData) {
+        allProducts.push({
+          data: itemData,
+          family: getFamily(link),
+          price: getPrice(link.getAttribute('data-price'))
+        });
       }
-      
-      // Función para obtener la familia de un producto
-      function getFamily(link) {
-        const familyIds = [
-          '2930F', '5140', '6000', '6100', '6200F', '6200M', '6300M', '8300'
-        ];
-        let el = link.parentElement;
-        while (el) {
-          if (el.id && familyIds.includes(el.id)) {
-            return el.id;
-          }
-          el = el.parentElement;
-        }
-        return '';
-      }
-      
-      // Función para obtener precio numérico
-      function getPrice(priceStr) {
-        if (!priceStr || priceStr === 'consultar') return 999999;
-        return parseFloat(priceStr.replace(/,/g, ''));
-      }
-      
-      // Recopilar todos los productos
-      document.querySelectorAll('a.block[data-price]').forEach(link => {
-        const itemData = convertToListItem(link);
-        if (itemData) {
-          allProducts.push({
-            data: itemData,
-            family: getFamily(link),
-            price: getPrice(link.getAttribute('data-price'))
-          });
-        }
-      });
-      
-      // Ocultar las secciones originales de familias
-      function toggleOriginalFamilySections(hide) {
-        const familyIds = [
-          '2930F', '5140', '6000', '6100', '6200F', '6200M', '6300M', '8300'
-        ];
-        familyIds.forEach(id => {
-          const section = document.getElementById(id);
-          if (section) {
-            if (hide) {
-              section.classList.add('original-family-section');
-            } else {
-              section.classList.remove('original-family-section');
+    });
+    // Ocultar las secciones originales
+    familyOrder.forEach(id => {
+      const section = document.getElementById(id);
+      if (section) section.classList.add('original-family-section');
+    });
+    // Renderizar productos agrupados por familia
+    function renderProducts(showFamilyTitles = false) {
+      const familyFilter = document.getElementById('filterFamily').value;
+      const priceSort = document.getElementById('sortPrice').value;
+      const container = document.getElementById('productsListContainer');
+      container.innerHTML = '';
+      if (familyFilter === 'all') {
+        // Vista general agrupada por familia
+        familyOrder.forEach(fam => {
+          const products = allProducts.filter(p => p.family === fam);
+          if (products.length > 0) {
+            if (priceSort === 'asc') {
+              products.sort((a, b) => a.price - b.price);
+            } else if (priceSort === 'desc') {
+              products.sort((a, b) => b.price - a.price);
             }
+            const info = familyInfo[fam];
+            if (info) {
+              container.innerHTML += `
+                <div class="family-title-header">
+                  <h2>${info.title}</h2>
+                  <p>${info.desc}</p>
+                </div>
+              `;
+            }
+            products.forEach(product => {
+              container.innerHTML += createProductCardHTML(product.data);
+            });
           }
         });
-      }
-      
-      // Función para renderizar productos
-  function renderProducts(showFamilyTitles = false) {
-        const familyFilter = document.getElementById('filterFamily').value;
-        const priceSort = document.getElementById('sortPrice').value;
-        const container = document.getElementById('productsListContainer');
-        
-        // Filtrar productos
-        let filteredProducts = allProducts.filter(product => {
-          if (familyFilter === 'all') return true;
-          return product.family === familyFilter;
-        });
-        // Mostrar/ocultar secciones originales según el filtro
-  // Siempre ocultar las secciones originales de familia cuando se usa el grid dinámico
-  toggleOriginalFamilySections(true);
-        
-        // Ordenar por precio si es necesario
+      } else {
+        // Filtrado por familia
+        let filteredProducts = allProducts.filter(product => product.family === familyFilter);
         if (priceSort === 'asc') {
           filteredProducts.sort((a, b) => a.price - b.price);
         } else if (priceSort === 'desc') {
           filteredProducts.sort((a, b) => b.price - a.price);
         }
-        
-        // Limpiar contenedor
-        container.innerHTML = '';
-        
-        if (showFamilyTitles && familyFilter !== 'all') {
-          // Mostrar con título de familia
+        if (showFamilyTitles) {
           const info = familyInfo[familyFilter];
           if (info) {
-            const titleHTML = `
+            container.innerHTML += `
               <div class="family-title-header">
                 <h2>${info.title}</h2>
                 <p>${info.desc}</p>
               </div>
             `;
-            container.innerHTML = titleHTML;
           }
         }
-        
-        // Agregar productos
         filteredProducts.forEach(product => {
           container.innerHTML += createProductCardHTML(product.data);
         });
-        
-        // Agregar funcionalidad de navegación a las tarjetas
-        container.querySelectorAll('.product-card').forEach(card => {
-          // Click: ir a la página del producto
-          card.addEventListener('click', function(e) {
-            const url = this.getAttribute('data-url');
-            if (url) {
-              window.location.href = url;
-            }
-          });
-        });
       }
-      
-      // Renderizar todos los productos inicialmente (sin títulos)
+      // Click en tarjeta para navegar
+      container.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+          const url = this.getAttribute('data-url');
+          if (url) window.location.href = url;
+        });
+      });
+    }
+    // Render inicial agrupado
+    renderProducts(false);
+    // Listeners de filtros
+    document.getElementById('filterFamily').addEventListener('change', function() {
+      const showTitles = this.value !== 'all';
+      renderProducts(showTitles);
+    });
+    document.getElementById('sortPrice').addEventListener('change', function() {
+      const familyFilter = document.getElementById('filterFamily').value;
+      const showTitles = familyFilter !== 'all';
+      renderProducts(showTitles);
+    });
+    document.getElementById('resetFilters').addEventListener('click', function() {
+      document.getElementById('filterFamily').value = 'all';
+      document.getElementById('sortPrice').value = 'default';
       renderProducts(false);
-      
-      // Event listeners para los controles
-      document.getElementById('filterFamily').addEventListener('change', function() {
-        const showTitles = this.value !== 'all';
-        renderProducts(showTitles);
-      });
-      
-      document.getElementById('sortPrice').addEventListener('change', function() {
-        const familyFilter = document.getElementById('filterFamily').value;
-        const showTitles = familyFilter !== 'all';
-        renderProducts(showTitles);
-      });
-      
-      document.getElementById('resetFilters').addEventListener('click', function() {
-        document.getElementById('filterFamily').value = 'all';
-        document.getElementById('sortPrice').value = 'default';
-        renderProducts(false);
-      });
-      // Copiar las descripciones ocultas (overlay) a un elemento visible debajo del precio
-      try {
-        document.querySelectorAll('.ccr-card').forEach(card => {
-          const overlayP = card.querySelector('.absolute p');
-          if (overlayP) {
-            const text = overlayP.textContent.trim();
-            if (text && !card.querySelector('.product-desc')) {
-              const desc = document.createElement('p');
-              desc.className = 'product-desc';
-              desc.textContent = text;
-              // Insertar después del span de precio cuando exista
-              const priceSpan = card.querySelector('span');
-              if (priceSpan && priceSpan.parentNode === card) {
-                priceSpan.insertAdjacentElement('afterend', desc);
-              } else {
-                card.appendChild(desc);
-              }
-            }
-          }
-        });
-      } catch (err) {
-        console.error('Error al copiar descripciones a las tarjetas:', err);
-      }
-
-      // Lógica de selección: al hacer click en la tarjeta se selecciona/deselecciona
-      try {
-        document.querySelectorAll('a.block').forEach(link => {
-          link.addEventListener('click', function(e) {
-            // Permitir abrir en nueva pestaña con Ctrl/Cmd/Shift o click medio
-            if (e.ctrlKey || e.shiftKey || e.metaKey || e.button === 1) return;
-            e.preventDefault();
-            const card = this.querySelector('.ccr-card');
-            if (card) card.classList.toggle('selected');
-          });
-
-          // Soporte de teclado: Enter para seleccionar sin navegar
-          link.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              const card = this.querySelector('.ccr-card');
-              if (card) card.classList.toggle('selected');
-            }
-          });
-        });
-      } catch (err) {
-        console.error('Error en la lógica de selección de tarjetas:', err);
-      }
     });
   </script>
 

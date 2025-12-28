@@ -221,6 +221,10 @@
       border-radius: 0.5rem;
       margin-bottom: 1rem;
       margin-top: 1.5rem;
+            /* Que ocupe toda la fila del grid */
+      grid-column: 1 / -1;
+      width: 100%;
+      display: block;
     }
     
     .family-title-header:first-child {
@@ -672,7 +676,10 @@
                   <p class="text-xs text-gray-600 text-center font-bold">HPE Networking Instant On Switch 24p Gigabit CL4 PoE 2p SFP 195W 1830</p>
                 </div>
               </div>
-            </a>
+            </a> 
+              
+
+              
           </div>
         </div>
       </div>
@@ -1065,50 +1072,69 @@
         section.classList.add('original-family-section');
       });
       
-      // Función para renderizar productos
+      // Función para renderizar productos agrupados por familia
       function renderProducts(showFamilyTitles = false) {
         const familyFilter = document.getElementById('filterFamily').value;
         const priceSort = document.getElementById('sortPrice').value;
         const container = document.getElementById('productsListContainer');
-        
-        // Filtrar productos
-        let filteredProducts = allProducts.filter(product => {
-          if (familyFilter === 'all') return true;
-          return product.family === familyFilter;
-        });
-        
-        // Ordenar por precio si es necesario
-        if (priceSort === 'asc') {
-          filteredProducts.sort((a, b) => a.price - b.price);
-        } else if (priceSort === 'desc') {
-          filteredProducts.sort((a, b) => b.price - a.price);
-        }
-        
-        // Limpiar contenedor
         container.innerHTML = '';
-        
-        if (showFamilyTitles && familyFilter !== 'all') {
-          // Mostrar con título de familia
-          const info = familyInfo[familyFilter];
-          if (info) {
-            const titleHTML = `
-              <div class="family-title-header">
-                <h2>${info.title}</h2>
-                <p>${info.desc}</p>
-              </div>
-            `;
-            container.innerHTML = titleHTML;
+
+        // Orden de familias por complejidad
+        const familyOrder = ['1430', '1830', '1930', '1960', 'secure'];
+
+        if (familyFilter === 'all') {
+          // Vista general: mostrar agrupados y titulados por familia
+          familyOrder.forEach(fam => {
+            const products = allProducts.filter(p => p.family === fam);
+            if (products.length > 0) {
+              // Ordenar por precio si corresponde
+              if (priceSort === 'asc') {
+                products.sort((a, b) => a.price - b.price);
+              } else if (priceSort === 'desc') {
+                products.sort((a, b) => b.price - a.price);
+              }
+              // Título de familia
+              const info = familyInfo[fam];
+              if (info) {
+                container.innerHTML += `
+                  <div class="family-title-header">
+                    <h2>${info.title}</h2>
+                    <p>${info.desc}</p>
+                  </div>
+                `;
+              }
+              // Productos de la familia
+              products.forEach(product => {
+                container.innerHTML += createProductCardHTML(product.data);
+              });
+            }
+          });
+        } else {
+          // Filtrado: solo la familia seleccionada
+          let filteredProducts = allProducts.filter(product => product.family === familyFilter);
+          if (priceSort === 'asc') {
+            filteredProducts.sort((a, b) => a.price - b.price);
+          } else if (priceSort === 'desc') {
+            filteredProducts.sort((a, b) => b.price - a.price);
           }
+          if (showFamilyTitles) {
+            const info = familyInfo[familyFilter];
+            if (info) {
+              container.innerHTML += `
+                <div class="family-title-header">
+                  <h2>${info.title}</h2>
+                  <p>${info.desc}</p>
+                </div>
+              `;
+            }
+          }
+          filteredProducts.forEach(product => {
+            container.innerHTML += createProductCardHTML(product.data);
+          });
         }
-        
-        // Agregar productos
-        filteredProducts.forEach(product => {
-          container.innerHTML += createProductCardHTML(product.data);
-        });
-        
+
         // Agregar funcionalidad de navegación a las tarjetas
         container.querySelectorAll('.product-card').forEach(card => {
-          // Click: ir a la página del producto
           card.addEventListener('click', function(e) {
             const url = this.getAttribute('data-url');
             if (url) {
@@ -1117,22 +1143,22 @@
           });
         });
       }
-      
-      // Renderizar todos los productos inicialmente (sin títulos)
+
+      // Renderizar todos los productos inicialmente (vista general agrupada)
       renderProducts(false);
-      
+
       // Event listeners para los controles
       document.getElementById('filterFamily').addEventListener('change', function() {
         const showTitles = this.value !== 'all';
         renderProducts(showTitles);
       });
-      
+
       document.getElementById('sortPrice').addEventListener('change', function() {
         const familyFilter = document.getElementById('filterFamily').value;
         const showTitles = familyFilter !== 'all';
         renderProducts(showTitles);
       });
-      
+
       document.getElementById('resetFilters').addEventListener('click', function() {
         document.getElementById('filterFamily').value = 'all';
         document.getElementById('sortPrice').value = 'default';
